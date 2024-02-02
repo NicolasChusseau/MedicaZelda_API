@@ -30,6 +30,34 @@ const routes =[
         }
     },
 
+    {
+        method: 'GET',
+        path: '/testmedecingouv',
+        handler: async (request, h) => {
+            const rpps = "10002527652";
+            const apiUrl = `${GOUV_URL}${rpps}`;
+            const headers = {
+                'ESANTE-API-KEY': process.env.API_KEY
+            };
+            const data = await fetchData(apiUrl, headers);
+            return h.response(data).code(200);
+        }
+    },
+
+    {
+        method: 'GET',
+        path: '/testmedecininstamed',
+        handler: async (request, h) => {
+            const rpps = "10002527652";
+            const apiUrl = `${INSTAMED_URL}/rpps/${rpps}`;
+            const headers = {
+                  'accept': 'application/ld+json',
+            }
+            const data = await fetchData(apiUrl, headers);
+            return h.response(data).code(200);
+        }
+    },
+
     /**
      * fonction qui récupère toutes les données d'un medecin depuis l'API du gouvernement via son numéro rpps
      * @param {string} rpps
