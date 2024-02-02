@@ -25,7 +25,7 @@ const routes =[
     {
         method: 'GET',
         path: '/',
-        handler: (request, h) => {
+        handler: () => {
             return {message: 'server ok'};
         }
     },
@@ -154,10 +154,6 @@ const server = Hapi.server({
 });
 
 server.route(routes);
-export const init = async () => {
-    await server.initialize();
-    return server;
-};
 
 export const start = async () => {
     await server.start();
