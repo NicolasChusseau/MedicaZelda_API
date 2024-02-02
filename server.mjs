@@ -94,6 +94,40 @@ const routes =[
         }
     },
 
+    /**
+     * fonction qui récupère toutes les données d'un medecin depuis l'API instamed via son nom et prénom
+     * @param {string} firstname
+     * @param {string} lastname
+     */
+    {
+        method: 'GET',
+        path: '/medecin_instamed/{firstname}/{lastname}',
+        handler: async (request, h) => {
+            // Si firstname ou lastname est égal à "null", ça veux dire qu'on ne doit pas prendre en compte ce paramètre, si les deux sont égaux à "null", on renvoie une erreur
+            const firstname = request.params.firstname === "null" ? "" : request.params.firstname;
+            const lastname = request.params.lastname === "null" ? "" : request.params.lastname;
+            if (firstname === "" && lastname === "") {
+                return h.response({
+                    message: "error : You must provide at least one parameter"
+                }).code(400);
+            }
+
+            const apiUrl = `${INSTAMED_URL}/rpps?firstName=${firstname}&lastName=${lastname}`;
+            const headers = {
+                'accept': 'application/ld+json',
+            }
+            const data = await fetchData(apiUrl, headers);
+
+            // Si hydra:member est vide, on retourne une erreur 404
+            if (data['hydra:totalItems'] === 0) {
+                return h.response({
+                    message: "error : No practitioner found"
+                }).code(404);
+            }
+            return h.response(data).code(200);
+        }
+    },
+
 
     // route par défaut (404)
     {
@@ -101,7 +135,7 @@ const routes =[
         path: "/{any*}",
         handler: async (request, h) => {
             return h.response({
-                message: "route not found"
+                message: "error : This route doesn't exist"
             }).code(404);
         },
     }
