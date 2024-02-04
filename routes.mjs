@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
-import fetch from "node-fetch";
+import {fetchData, parseInstamedData, parseGouvData, parseMultipleInstamedData} from "./utils.mjs";
+import {medecinGouv, medecinInstamed, error404, rpps, names, tabMedecinInstamed} from "./joiObjects.mjs";
 
 dotenv.config();
 
@@ -7,11 +8,6 @@ dotenv.config();
 const GOUV_URL = "https://gateway.api.esante.gouv.fr/fhir/v1/Practitioner?identifier="
 const INSTAMED_URL = "https://data.instamed.fr/api"
 
-// Fonction pour effectuer une requête HTTP
-const fetchData = async (url, headers) => {
-    const response = await fetch(url, { headers });
-    return await response.json();
-};
 
 // on définie nos routes ici
 export const routes =[
@@ -36,7 +32,8 @@ export const routes =[
                 'ESANTE-API-KEY': process.env.API_KEY
             };
             const data = await fetchData(apiUrl, headers);
-            return h.response(data).code(200);
+            const result = parseGouvData(data, rpps);
+            return h.response(result).code(200);
         }
     },
 
@@ -50,7 +47,8 @@ export const routes =[
                 'accept': 'application/ld+json',
             }
             const data = await fetchData(apiUrl, headers);
-            return h.response(data).code(200);
+            const result = parseInstamedData(data);
+            return h.response(result).code(200);
         },
     },
 
@@ -68,31 +66,29 @@ export const routes =[
                 'ESANTE-API-KEY': process.env.API_KEY
             };
             const data = await fetchData(apiUrl, headers);
-            try {
-                const tabExtension = data.entry[0].resource.extension[0].extension;
-                let email = "";
-                let gender = data.entry[0].resource.name[0].prefix[0];
-                for (let i = 0; i < tabExtension.length; i++) {
-                    if (tabExtension[i].url === "value") {
-                        email = tabExtension[i].valueString;
-                    }
-                }
-                // Pour récupérer le prénom et le nom du médecin, on récupère ce qu'il y a avant le @ dans l'email
-                // ensuite on split le résultat avec un point pour récupérer le prénom et le nom
-                let firstname = email.split('@')[0].split('.')[0];
-                let lastname = email.split('@')[0].split('.')[1];
+            const result = parseGouvData(data, rpps);
+
+            // Si tous les champs sont égaux à "unknown", on renvoie une erreur 404
+            if (result.email === "unknown" && result.firstname === "unknown" && result.lastname === "unknown" && result.gender === "unknown") {
                 return h.response({
-                    email: email,
-                    gender: gender,
-                    firstname: firstname,
-                    lastname: lastname
-                }).code(200);
-            } catch (error) {
-                return h.response({
-                    message: "error : This practitioner hasn't entered enough information"
+                    message: "error : No practitioner found"
                 }).code(404);
             }
+            return h.response(result).code(200);
         },
+        options: {
+            tags: ['api'],
+            description: 'Get information about a practitioner from GOUV API using RPPS',
+            validate: {
+                params: rpps,
+            },
+            response: {
+                status: {
+                    200: medecinGouv,
+                    404: error404
+                }
+            },
+        }
     },
 
     /**
@@ -114,8 +110,22 @@ export const routes =[
                     data: data
                 }).code(404);
             }
-            return h.response(data).code(200);
+            const result = parseInstamedData(data);
+            return h.response(result).code(200);
         },
+        options: {
+            tags: ['api'],
+            description: 'Get information about a practitioner from INSTAMED API using RPPS',
+            validate: {
+                params: rpps,
+            },
+            response: {
+                status: {
+                    200: medecinInstamed,
+                    404: error404
+                }
+            },
+        }
     },
 
     /**
@@ -136,7 +146,9 @@ export const routes =[
                 }).code(400);
             }
 
-            const apiUrl = `${INSTAMED_URL}/rpps?firstName=${firstname}&lastName=${lastname}`;
+            // La valeur maximal de _per_page est 100 donc on va récupérer les 100 premiers médecins
+            const nbPractitioner = 100;
+            const apiUrl = `${INSTAMED_URL}/rpps?firstName=${firstname}&lastName=${lastname}&_per_page=${nbPractitioner}`;
             const headers = {
                 'accept': 'application/ld+json',
             }
@@ -148,8 +160,23 @@ export const routes =[
                     message: "error : No practitioner found"
                 }).code(404);
             }
-            return h.response(data).code(200);
+            const res = parseMultipleInstamedData(data, nbPractitioner);
+            return h.response(res).code(200);
         },
+        options: {
+            tags: ['api'],
+            description: 'Get information about a practitioner from INSTAMED API using firstname and lastname',
+            notes: 'You can ignore the firstname or the lastname by putting "null" in the url. But you must provide at least one parameter',
+            validate: {
+                params: names,
+            },
+            response: {
+                status: {
+                    200: tabMedecinInstamed,
+                    404: error404
+                }
+            },
+        }
     },
 
 
