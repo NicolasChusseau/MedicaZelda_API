@@ -7,7 +7,7 @@ import Vision from '@hapi/vision';
 import HapiSwagger from 'hapi-swagger';
 import {routes} from './routes.mjs';
 
-const server = Hapi.server({
+export const server = Hapi.server({
     port: 3000,
     host: 'localhost',
     routes: {

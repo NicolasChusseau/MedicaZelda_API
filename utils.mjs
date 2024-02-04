@@ -86,3 +86,47 @@ export const parseGouvData = (data, rpps) => {
         gender: gender
     }
 }
+
+export const matchResult = (dataGouv, dataInstamed, rpps) => {
+    let firstname = dataInstamed.firstname;
+    let lastname = dataInstamed.lastname;
+    let email = dataInstamed.email;
+    let phoneNumber = dataInstamed.phoneNumber;
+    let address = dataInstamed.address;
+    let zipCode = dataInstamed.zipCode;
+    let city = dataInstamed.city;
+    let gender = dataGouv.gender
+
+    // Si l'un des champs firstname, lastname ou email est égal à "unknown", on le remplace par la valeur correspondante dans dataGouv
+    if (firstname === "unknown") {
+        firstname = dataGouv.firstname;
+    }
+    if (lastname === "unknown") {
+        lastname = dataGouv.lastname;
+    }
+    if (email === "unknown") {
+        email = dataGouv.email;
+    }
+
+    return {
+        rpps: rpps,
+        firstname: firstname,
+        lastname: lastname,
+        email: email,
+        phoneNumber: phoneNumber,
+        address: address,
+        zipCode: zipCode,
+        city: city,
+        gender: gender,
+    }
+}
+
+
+
+
+
+
+
+
+
+
