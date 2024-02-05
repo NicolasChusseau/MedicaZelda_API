@@ -1,0 +1,15 @@
+
+# ignore node_modules and .idea folders
+**/node_modules
+**/.idea
+
+# ignore all .local files
+**/*.local
+
+# ignore .env file
+**/.env
+
+# ignore package-lock.json file
+**/package-lock.json
+
+
