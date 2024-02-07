@@ -124,9 +124,7 @@ export const routes =[
                 }).code(400);
             }
 
-            // La valeur maximal de _per_page est 100 donc on va récupérer les 100 premiers médecins
-            const nbPractitionerPerPage = 100;
-            const apiUrl = `${INSTAMED_URL}/rpps?firstName=${firstname}&lastName=${lastname}&_per_page=${nbPractitionerPerPage}`;
+            const apiUrl = `${INSTAMED_URL}/rpps?firstName=${firstname}&lastName=${lastname}`;
             const headers = {
                 'accept': 'application/ld+json',
             }
@@ -139,7 +137,9 @@ export const routes =[
                 }).code(404);
             }
 
-            // Le nombre de tour de boucle est soit le nombre de medecin trouvé soit le nombre de medecin par page si il y a plus de medecin que le nombre de medecin par page
+            // La valeur par default du nombre de medecin par page est 30. On ne peut pas prendre une valeur trop grande car on ne prendra un timeout sur vercel sinon.
+            const nbPractitionerPerPage = 30;
+            // Le nombre de tour de boucle est le minimum entre le nombre de medecin par page et le nombre total de medecin
             const nbPractitioner = data['hydra:totalItems'];
             const tourBoucle = Math.min(nbPractitionerPerPage, nbPractitioner);
 
