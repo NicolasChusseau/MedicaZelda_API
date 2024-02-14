@@ -118,6 +118,10 @@ export const routes =[
             // Si firstname ou lastname est égal à "null", ça veux dire qu'on ne doit pas prendre en compte ce paramètre, si les deux sont égaux à "null", on renvoie une erreur
             const firstname = request.params.firstname === "null" ? "" : request.params.firstname;
             const lastname = request.params.lastname === "null" ? "" : request.params.lastname;
+            // Si le paramètre perPage est renseigné, on le prend en compte, sinon on prend 30 par défaut
+            const nbPractitionerPerPage = request.query.perPage || 30;
+
+
             if (firstname === "" && lastname === "") {
                 return h.response({
                     message: "error : You must provide at least one parameter"
@@ -137,8 +141,7 @@ export const routes =[
                 }).code(404);
             }
 
-            // La valeur par default du nombre de medecin par page est 30. On ne peut pas prendre une valeur trop grande car on ne prendra un timeout sur vercel sinon.
-            const nbPractitionerPerPage = 30;
+
             // Le nombre de tour de boucle est le minimum entre le nombre de medecin par page et le nombre total de medecin
             const nbPractitioner = data['hydra:totalItems'];
             const tourBoucle = Math.min(nbPractitionerPerPage, nbPractitioner);
