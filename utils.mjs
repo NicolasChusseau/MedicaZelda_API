@@ -16,11 +16,13 @@ export const parseInstamedData = (data) => {
     const city = (data.city == null || data.city === "") ? "unknown" : data.city;
     const phoneNumber = (data.phoneNumber == null || data.phoneNumber === "") ? "unknown" : data.phoneNumber;
     const rpps = (data.idRpps == null || data.idRpps === "") ? "unknown" : data.idRpps;
+    const specialty = (data.specialty == null || data.specialty === "") ? "unknown" : data.specialty;
 
     return {
         rpps: rpps,
         firstname: firstname,
         lastname: lastname,
+        specialty: specialty,
         email: email,
         phoneNumber: phoneNumber,
         address: address,
@@ -91,11 +93,13 @@ export const matchResult = (dataGouv, dataInstamed, rpps) => {
     let firstname = dataInstamed.firstname;
     let lastname = dataInstamed.lastname;
     let email = dataInstamed.email;
-    let phoneNumber = dataInstamed.phoneNumber;
-    let address = dataInstamed.address;
-    let zipCode = dataInstamed.zipCode;
-    let city = dataInstamed.city;
-    let gender = dataGouv.gender
+    const phoneNumber = dataInstamed.phoneNumber;
+    const address = dataInstamed.address;
+    const zipCode = dataInstamed.zipCode;
+    const city = dataInstamed.city;
+    const gender = dataGouv.gender
+    const specialty = dataInstamed.specialty;
+
 
     // Si l'un des champs firstname, lastname ou email est égal à "unknown", on le remplace par la valeur correspondante dans dataGouv
     if (firstname === "unknown") {
@@ -112,6 +116,7 @@ export const matchResult = (dataGouv, dataInstamed, rpps) => {
         rpps: rpps,
         firstname: firstname,
         lastname: lastname,
+        specialty: specialty,
         email: email,
         phoneNumber: phoneNumber,
         address: address,

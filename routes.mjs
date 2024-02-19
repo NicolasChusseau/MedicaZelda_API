@@ -83,7 +83,7 @@ export const routes =[
             }
             const result = parseInstamedData(data);
             //Si tous les champs sont à unknown, on renvoie une erreur 404
-            if (result.email === "unknown" && result.firstname === "unknown" && result.lastname === "unknown" && result.phoneNumber === "unknown" && result.address === "unknown" && result.zipCode === "unknown" && result.city === "unknown") {
+            if (result.email === "unknown" && result.firstname === "unknown" && result.lastname === "unknown" && result.phoneNumber === "unknown" && result.address === "unknown" && result.zipCode === "unknown" && result.city === "unknown" && result.specialty === "unknown") {
                 return h.response({
                     message: "error : No practitioner found"
                 }).code(404);
