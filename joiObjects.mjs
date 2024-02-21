@@ -45,9 +45,14 @@ export const arrayMedecin = Joi.array().items(medecin)
     .label('ArrayMedecin');
 
 export const error404 = Joi.object({
-    message: Joi.string().description('Error message'),
+    message: Joi.string().description('Error message for 404 error'),
 }).description('Error 404')
     .label('Error404');
+
+export const error503 = Joi.object({
+    message: Joi.string().description('Error message for 503 error'),
+}).description('Error 503')
+    .label('Error503');
 
 export const rpps = Joi.object({
     rpps: Joi.string().required().description('RPPS number of the practitioner'),

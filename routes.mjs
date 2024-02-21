@@ -1,6 +1,16 @@
 import dotenv from "dotenv";
 import {fetchData, parseInstamedData, parseGouvData, parseMultipleInstamedData, matchResult} from "./utils.mjs";
-import {medecinGouv, medecinInstamed, error404, rpps, names, arrayMedecinInstamed, medecin, arrayMedecin} from "./joiObjects.mjs";
+import {
+    medecinGouv,
+    medecinInstamed,
+    error404,
+    rpps,
+    names,
+    arrayMedecinInstamed,
+    medecin,
+    arrayMedecin,
+    error503
+} from "./joiObjects.mjs";
 import {server} from "./server.mjs";
 
 dotenv.config();
@@ -36,7 +46,14 @@ export const routes =[
             const headers = {
                 'ESANTE-API-KEY': process.env.API_KEY
             };
-            const data = await fetchData(apiUrl, headers);
+            let data;
+            try {
+                data = await fetchData(apiUrl, headers);
+            } catch (error) {
+                return h.response({
+                    message: "error : can't fetch data from GOUV API"
+                }).code(503);
+            }
             const result = parseGouvData(data, rpps);
 
             // Si tous les champs sont égaux à "unknown", on renvoie une erreur 404
@@ -56,7 +73,8 @@ export const routes =[
             response: {
                 status: {
                     200: medecinGouv,
-                    404: error404
+                    404: error404,
+                    503: error503
                 }
             },
         }
@@ -75,7 +93,14 @@ export const routes =[
             const headers = {
                 'accept': 'application/ld+json',
             }
-            const data = await fetchData(apiUrl, headers);
+            let data;
+            try {
+                data = await fetchData(apiUrl, headers);
+            } catch (error) {
+                return h.response({
+                    message: "error : can't fetch data from INSTAMED API"
+                }).code(503);
+            }
             if (data.error) {
                 return h.response({
                     data: data
@@ -100,7 +125,8 @@ export const routes =[
             response: {
                 status: {
                     200: medecinInstamed,
-                    404: error404
+                    404: error404,
+                    503: error503
                 }
             },
         }
@@ -132,7 +158,14 @@ export const routes =[
             const headers = {
                 'accept': 'application/ld+json',
             }
-            const data = await fetchData(apiUrl, headers);
+            let data;
+            try {
+                data = await fetchData(apiUrl, headers);
+            } catch (error) {
+                return h.response({
+                    message: "error : can't fetch data from INSTAMED API"
+                }).code(503);
+            }
 
             // Si hydra:member est vide, on retourne une erreur 404
             if (data['hydra:totalItems'] === 0) {
@@ -159,7 +192,8 @@ export const routes =[
             response: {
                 status: {
                     200: arrayMedecinInstamed,
-                    404: error404
+                    404: error404,
+                    503: error503
                 }
             },
         }
@@ -192,6 +226,18 @@ export const routes =[
                 }).code(404);
             }
 
+            // Si l'une des deux api renvoie une erreur 503, on renvoie une erreur 503
+            if (gouvInfo.statusCode === 503 || instamedInfo.statusCode === 503) {
+                // On renvoie un message d'erreur dans lequel on précise quel api a renvoyé une erreur
+                return h.response({
+                    message: "error : can't fetch data from "
+                        + (gouvInfo.statusCode === 503 ? "GOUV" : "")
+                        + (gouvInfo.statusCode === 503 && instamedInfo.statusCode === 503 ? " and " : "")
+                        + (instamedInfo.statusCode === 503 ? "INSTAMED" : "")
+                        + " API"
+                }).code(503);
+            }
+
             gouvInfo = JSON.parse(gouvInfo.payload);
             instamedInfo = JSON.parse(instamedInfo.payload);
 
@@ -209,7 +255,8 @@ export const routes =[
             response: {
                 status: {
                     200: medecin,
-                    404: error404
+                    404: error404,
+                    503: error503
                 }
             },
         }
@@ -238,16 +285,30 @@ export const routes =[
                     message: "error : No practitioner found"
                 }).code(404);
             }
+
+            if (instamedInfo.statusCode === 503) {
+                return h.response({
+                    message: "error : can't fetch data from INSTAMED API"
+                }).code(503);
+            }
+
             // On ne prend que le payload de la réponse (json d'inforamtion sur le medecin)
             instamedInfo = JSON.parse(instamedInfo.payload);
 
             // On appelle la route /medecin_instamed/{rpps} pour récupérer les données du gouvernement pour chaque medecin trouvé
             let res = [];
             for (let i = 0; i < instamedInfo.length; i++) {
-                let gouvInfo = await server.inject({
-                    method: 'GET',
-                    url: `/medecin_gouv/${instamedInfo[i].rpps}`
-                });
+                let gouvInfo;
+                try {
+                    gouvInfo = await server.inject({
+                        method: 'GET',
+                        url: `/medecin_gouv/${instamedInfo[i].rpps}`
+                    });
+                } catch (error) {
+                    return h.response({
+                        message: "error : can't fetch data from GOUV API"
+                    }).code(503);
+                }
 
                 gouvInfo = JSON.parse(gouvInfo.payload);
 
@@ -268,7 +329,8 @@ export const routes =[
             response: {
                 status: {
                     200: arrayMedecin,
-                    404: error404
+                    404: error404,
+                    503: error503
                 }
             },
         }
