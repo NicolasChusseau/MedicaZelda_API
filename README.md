@@ -16,6 +16,9 @@ nvm install v20.11.0
 
 ### Run the server 
 ```bash
+# Install dependencies
+npm i
+
 # Normal mode
 npm start
 
