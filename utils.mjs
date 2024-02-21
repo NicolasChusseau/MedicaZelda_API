@@ -56,9 +56,9 @@ export const parseGouvData = (data, rpps) => {
     // On essaye de récupérer l'email du medecin
     try {
         const tabExtension = data.entry[0].resource.extension[0].extension;
-        for (let i = 0; i < tabExtension.length; i++) {
-            if (tabExtension[i].url === "value") {
-                email = tabExtension[i].valueString;
+        for (const obj of tabExtension) {
+            if (obj.url === "value") {
+                email = obj.valueString;
             }
         }
     } catch (error) {

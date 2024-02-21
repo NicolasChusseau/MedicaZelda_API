@@ -297,12 +297,12 @@ export const routes =[
 
             // On appelle la route /medecin_instamed/{rpps} pour récupérer les données du gouvernement pour chaque medecin trouvé
             let res = [];
-            for (let i = 0; i < instamedInfo.length; i++) {
+            for (const instamed of instamedInfo) {
                 let gouvInfo;
                 try {
                     gouvInfo = await server.inject({
                         method: 'GET',
-                        url: `/medecin_gouv/${instamedInfo[i].rpps}`
+                        url: `/medecin_gouv/${instamed.rpps}`
                     });
                 } catch (error) {
                     return h.response({
@@ -313,7 +313,7 @@ export const routes =[
                 gouvInfo = JSON.parse(gouvInfo.payload);
 
                 // On compare les données des deux api
-                const result = matchResult(gouvInfo, instamedInfo[i], instamedInfo[i].rpps);
+                const result = matchResult(gouvInfo, instamed, instamed.rpps);
                 res.push(result);
             }
 
