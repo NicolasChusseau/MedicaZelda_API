@@ -1,4 +1,5 @@
 # MedicaZelda_API
+API used in [MedicaZelda](https://github.com/Mthieu44/MedicaZelda/) project
 
 #### Depuis les pc de l'IUT
 ```bash
